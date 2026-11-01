@@ -24,3 +24,30 @@ export const getEventById = async (id: string) => {
 
   return event;
 };
+
+export const createEvent = async (eventData: {
+  title: string;
+  description: string;
+  eventType: string;
+  image: string;
+  location: string;
+  eventDate: Date;
+  creatorEmail: string;
+}) => {
+  const db = await connectDB();
+
+  const now = new Date();
+
+  const newEvent = {
+    ...eventData,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const result = await db.collection("events").insertOne(newEvent);
+
+  return {
+    ...newEvent,
+    _id: result.insertedId,
+  };
+};

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getEventById, getUpcomingEvents } from "../services/event.service.js";
+import { createEvent, getEventById, getUpcomingEvents } from "../services/event.service.js";
 import { ObjectId } from "mongodb";
 
 export const getUpcomingEventsController = async (
@@ -61,6 +61,72 @@ export const getEventByIdController = async (
     res.status(500).json({
       success: false,
       message: "Failed to fetch event",
+    });
+  }
+};
+
+export const createEventController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const {
+      title,
+      description,
+      eventType,
+      image,
+      location,
+      eventDate,
+      creatorEmail,
+    } = req.body;
+
+    if (
+      !title ||
+      !description ||
+      !eventType ||
+      !image ||
+      !location ||
+      !eventDate ||
+      !creatorEmail
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+      return;
+    }
+
+    const parsedDate = new Date(eventDate);
+
+    if (Number.isNaN(parsedDate.getTime()) || parsedDate <= new Date()) {
+      res.status(400).json({
+        success: false,
+        message: "Event date must be in the future",
+      });
+      return;
+    }
+
+    const event = await createEvent({
+      title,
+      description,
+      eventType,
+      image,
+      location,
+      eventDate: parsedDate,
+      creatorEmail,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Event created successfully",
+      data: event,
+    });
+  } catch (error) {
+    console.error("Error creating event:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to create event",
     });
   }
 };

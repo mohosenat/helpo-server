@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createEvent, getEventById, getUpcomingEvents } from "../services/event.service.js";
+import { createEvent, getEventById, getMyEvents, getUpcomingEvents } from "../services/event.service.js";
 import { ObjectId } from "mongodb";
 
 export const getUpcomingEventsController = async (
@@ -127,6 +127,38 @@ export const createEventController = async (
     res.status(500).json({
       success: false,
       message: "Failed to create event",
+    });
+  }
+};
+
+export const getMyEventsController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const creatorEmail = req.query.email;
+
+    if (typeof creatorEmail !== "string" || !creatorEmail.trim()) {
+      res.status(400).json({
+        success: false,
+        message: "Creator email is required",
+      });
+      return;
+    }
+
+    const events = await getMyEvents(creatorEmail);
+
+    res.status(200).json({
+      success: true,
+      message: "Your events fetched successfully",
+      data: events,
+    });
+  } catch (error) {
+    console.error("Error fetching your events:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch your events",
     });
   }
 };

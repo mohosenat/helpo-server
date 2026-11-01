@@ -51,3 +51,15 @@ export const createEvent = async (eventData: {
     _id: result.insertedId,
   };
 };
+
+export const getMyEvents = async (creatorEmail: string) => {
+  const db = await connectDB();
+
+  const events = await db
+    .collection("events")
+    .find({ creatorEmail })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return events;
+};

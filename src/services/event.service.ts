@@ -96,3 +96,17 @@ export const updateEvent = async (
 
   return result;
 };
+
+export const deleteEvent = async (
+  id: string,
+  creatorEmail: string
+) => {
+  const db = await connectDB();
+
+  const result = await db.collection("events").deleteOne({
+    _id: new ObjectId(id),
+    creatorEmail,
+  });
+
+  return result;
+};

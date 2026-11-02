@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createEvent, getEventById, getMyEvents, getUpcomingEvents, updateEvent } from "../services/event.service.js";
+import { createEvent, deleteEvent, getEventById, getMyEvents, getUpcomingEvents, updateEvent } from "../services/event.service.js";
 import { ObjectId } from "mongodb";
 
 export const getUpcomingEventsController = async (
@@ -249,3 +249,46 @@ export const updateEventController = async (
     });
   }
 };
+
+
+export const deleteEventController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const id = req.params.id;
+
+    if (typeof id !== "string" || !ObjectId.isValid(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid event ID",
+      });
+      return;
+    }
+
+    const creatorEmail = res.locals.user.email;
+
+    const result = await deleteEvent(id, creatorEmail);
+
+    if (result.deletedCount === 0) {
+      res.status(404).json({
+        success: false,
+        message: "Event not found or you are not authorized to delete it",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Event deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete event",
+    });
+  }
+};
+

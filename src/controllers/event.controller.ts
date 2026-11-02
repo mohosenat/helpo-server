@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createEvent, deleteEvent, getEventById, getMyEvents, getUpcomingEvents, joinEvent, updateEvent } from "../services/event.service.js";
+import { createEvent, deleteEvent, getJoinedEvents, getEventById, getMyEvents, getUpcomingEvents, joinEvent, updateEvent } from "../services/event.service.js";
 import { ObjectId } from "mongodb";
 
 export const getUpcomingEventsController = async (
@@ -333,6 +333,30 @@ export const joinEventController = async (
     res.status(500).json({
       success: false,
       message: "Failed to join event",
+    });
+  }
+};
+
+export const getJoinedEventsController = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userEmail = res.locals.user.email;
+
+    const events = await getJoinedEvents(userEmail);
+
+    res.status(200).json({
+      success: true,
+      message: "Joined events retrieved successfully",
+      data: events,
+    });
+  } catch (error) {
+    console.error("Error retrieving joined events:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve joined events",
     });
   }
 };

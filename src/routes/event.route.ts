@@ -5,6 +5,7 @@ import {
   createEventController,
   deleteEventController,
   getEventByIdController,
+  getJoinedEventsController,
   getMyEventsController,
   getUpcomingEventsController,
   joinEventController,
@@ -15,6 +16,7 @@ import {
 const router = Router();
 
 router.get("/", getUpcomingEventsController);
+router.get("/joined-events", authenticateUser, getJoinedEventsController);
 router.post("/", authenticateUser, createEventController);
 router.get("/my-events", authenticateUser, getMyEventsController);
 router.get("/:id", getEventByIdController);

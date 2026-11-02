@@ -157,3 +157,45 @@ export const joinEvent = async (
     message: "You have successfully joined the event",
   };
 };
+
+export const getJoinedEvents = async (userEmail: string) => {
+  const db = await connectDB();
+
+  const joinedEvents = await db
+    .collection("eventParticipants")
+    .aggregate([
+      {
+        $match: { userEmail },
+      },
+      {
+        $lookup: {
+          from: "events",
+          localField: "eventId",
+          foreignField: "_id",
+          as: "event",
+        },
+      },
+      {
+        $unwind: "$event",
+      },
+      {
+        $sort: { joinedAt: -1 },
+      },
+      {
+        $project: {
+          _id: "$event._id",
+          title: "$event.title",
+          description: "$event.description",
+          eventType: "$event.eventType",
+          image: "$event.image",
+          location: "$event.location",
+          eventDate: "$event.eventDate",
+          creatorEmail: "$event.creatorEmail",
+          joinedAt: 1,
+        },
+      },
+    ])
+    .toArray();
+
+  return joinedEvents;
+};

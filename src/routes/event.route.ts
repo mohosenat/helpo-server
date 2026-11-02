@@ -7,6 +7,7 @@ import {
   getEventByIdController,
   getMyEventsController,
   getUpcomingEventsController,
+  joinEventController,
   updateEventController,
  
 } from "../controllers/event.controller.js";
@@ -19,5 +20,6 @@ router.get("/my-events", authenticateUser, getMyEventsController);
 router.get("/:id", getEventByIdController);
 router.put("/:id", authenticateUser, updateEventController);
 router.delete("/:id", authenticateUser, deleteEventController);
+router.post("/:id/join", authenticateUser, joinEventController);
 
 export default router;

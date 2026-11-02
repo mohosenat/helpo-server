@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createEvent, deleteEvent, getEventById, getMyEvents, getUpcomingEvents, updateEvent } from "../services/event.service.js";
+import { createEvent, deleteEvent, getEventById, getMyEvents, getUpcomingEvents, joinEvent, updateEvent } from "../services/event.service.js";
 import { ObjectId } from "mongodb";
 
 export const getUpcomingEventsController = async (
@@ -291,4 +291,50 @@ export const deleteEventController = async (
     });
   }
 };
+
+
+export const joinEventController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const id = req.params.id;
+
+    if (typeof id !== "string" || !ObjectId.isValid(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid event ID",
+      });
+      return;
+    }
+
+    const userEmail = res.locals.user.email;
+
+    const result = await joinEvent(id, userEmail);
+
+    if (!result.success) {
+      const statusCode =
+        result.message === "Event not found" ? 404 : 409;
+
+      res.status(statusCode).json({
+        success: false,
+        message: result.message,
+      });
+      return;
+    }
+
+    res.status(201).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    console.error("Error joining event:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to join event",
+    });
+  }
+};
+
 

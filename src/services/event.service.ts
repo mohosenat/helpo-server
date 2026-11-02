@@ -110,3 +110,50 @@ export const deleteEvent = async (
 
   return result;
 };
+
+
+export const joinEvent = async (
+  eventId: string,
+  userEmail: string
+) => {
+  const db = await connectDB();
+
+  const eventObjectId = new ObjectId(eventId);
+
+  // Check if the event exists
+  const event = await db.collection("events").findOne({
+    _id: eventObjectId,
+  });
+
+  if (!event) {
+    return {
+      success: false,
+      message: "Event not found",
+    };
+  }
+
+  // Check if the user already joined
+  const existingJoin = await db.collection("eventParticipants").findOne({
+    eventId: eventObjectId,
+    userEmail,
+  });
+
+  if (existingJoin) {
+    return {
+      success: false,
+      message: "You have already joined this event",
+    };
+  }
+
+  // Save the participant
+  await db.collection("eventParticipants").insertOne({
+    eventId: eventObjectId,
+    userEmail,
+    joinedAt: new Date(),
+  });
+
+  return {
+    success: true,
+    message: "You have successfully joined the event",
+  };
+};

@@ -66,6 +66,7 @@ export const getMyEvents = async (creatorEmail: string) => {
 
 export const updateEvent = async (
   id: string,
+  creatorEmail: string,
   eventData: {
     title: string;
     description: string;
@@ -78,14 +79,19 @@ export const updateEvent = async (
   const db = await connectDB();
 
   const result = await db.collection("events").findOneAndUpdate(
-    { _id: new ObjectId(id) },
+    {
+      _id: new ObjectId(id),
+      creatorEmail,
+    },
     {
       $set: {
         ...eventData,
         updatedAt: new Date(),
       },
     },
-    { returnDocument: "after" }
+    {
+      returnDocument: "after",
+    }
   );
 
   return result;

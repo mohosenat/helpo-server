@@ -65,6 +65,7 @@ export const getEventByIdController = async (
   }
 };
 
+
 export const createEventController = async (
   req: Request,
   res: Response
@@ -77,17 +78,15 @@ export const createEventController = async (
       image,
       location,
       eventDate,
-      creatorEmail,
     } = req.body;
 
     if (
-      !title ||
-      !description ||
-      !eventType ||
-      !image ||
-      !location ||
-      !eventDate ||
-      !creatorEmail
+      !title?.trim() ||
+      !description?.trim() ||
+      !eventType?.trim() ||
+      !image?.trim() ||
+      !location?.trim() ||
+      !eventDate
     ) {
       res.status(400).json({
         success: false,
@@ -106,12 +105,14 @@ export const createEventController = async (
       return;
     }
 
+    const creatorEmail = res.locals.user.email;
+
     const event = await createEvent({
-      title,
-      description,
-      eventType,
-      image,
-      location,
+      title: title.trim(),
+      description: description.trim(),
+      eventType: eventType.trim(),
+      image: image.trim(),
+      location: location.trim(),
       eventDate: parsedDate,
       creatorEmail,
     });
@@ -131,20 +132,14 @@ export const createEventController = async (
   }
 };
 
+
 export const getMyEventsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const creatorEmail = req.query.email;
+    const creatorEmail = res.locals.user.email;
 
-    if (typeof creatorEmail !== "string" || !creatorEmail.trim()) {
-      res.status(400).json({
-        success: false,
-        message: "Creator email is required",
-      });
-      return;
-    }
 
     const events = await getMyEvents(creatorEmail);
 
@@ -162,6 +157,7 @@ export const getMyEventsController = async (
     });
   }
 };
+
 
 export const updateEventController = async (
   req: Request,
@@ -220,17 +216,9 @@ export const updateEventController = async (
       return;
     }
 
-    const existingEvent = await getEventById(id);
+    const creatorEmail = res.locals.user.email;
 
-    if (!existingEvent) {
-      res.status(404).json({
-        success: false,
-        message: "Event not found",
-      });
-      return;
-    }
-
-    const updatedEvent = await updateEvent(id, {
+    const updatedEvent = await updateEvent(id, creatorEmail, {
       title: title.trim(),
       description: description.trim(),
       eventType: eventType.trim(),
@@ -242,7 +230,7 @@ export const updateEventController = async (
     if (!updatedEvent) {
       res.status(404).json({
         success: false,
-        message: "Event not found",
+        message: "Event not found or you are not authorized to update it",
       });
       return;
     }
